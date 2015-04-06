@@ -1,0 +1,54 @@
+
+<template name="rooms">
+{{#each rooms}}
+	<div class="{{css.eachRoomName}}">
+		<form id="selectRoom" type="POST">
+			<input name="room_id" type="hidden" value="{{_id}}">
+			<button>Go {{roomName}}</button>
+		</form>
+		<!-- {{> room data=currentRoom}} -->
+	</div>
+{{/each}}
+</template>
+
+<template name="message">
+	<li class="{{css.eachMessageli}}">
+		{{#if anon}}
+			<span class="{{css.eachMessageUsername}}">Anonymous</span>	
+		{{else}}
+			<span class="{{css.eachMessageUsername}}">{{user.owner}}</span>	
+		{{/if}}
+		<span class="{{css.eachMessage}}">{{msg}}</span>
+		<span class="{{css.eachMessageDate}}">({{created}})</span>
+	</li>
+</template>
+
+<template name="room">
+	<h3>{{data.roomName}}</h3>
+
+	<div id="chatMsgBox" class="{{css.msgs}}">
+		{{#each msgs}}
+			{{> message user=user anon=anon msg=msg created=createdAt}}
+		{{/each}}
+	</div>
+
+	<form id="newMessage" type="POST">
+		<div class="{{css.inputGroup}}">
+			<input type="text" class="{{css.input}}" name="message" placeholder="message"/>
+			<span class="{{css.btnGroup}}">
+				<input class="{{css.btns}}" type="submit" value="Send">
+			</span>
+		</div>
+	</form>
+</template>
+
+<template name="newRoom">
+	<h3>New Room</h3>
+	<form id="newRoomForm" type="POST">
+		<div class="{{css.inputGroup}}">
+			<input type="text" name="newRoomName" placeholder="room name" />
+			<input class="{{css.btn}}" type="submit" value="Create">
+			<p class="error">{{errorMsg}}</p>
+		</div>
+	</form>
+</template>
