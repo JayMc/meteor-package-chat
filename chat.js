@@ -4,6 +4,7 @@ ChatRooms = new Meteor.Collection('chatrooms');
 chat = {
 	css: {
 		msgs: 'well chatMsgBox msgs',
+		joinedList: 'well joined-users',
 
 		btns: 'btn btn-default',
 		btnGroup: 'input-group-btn',
@@ -16,6 +17,7 @@ chat = {
 		eachMessage: '',
 		eachMessageDate: 'msg-date',
 		eachMessageUsername: 'msg-name',
+		eachMessageAnonUsername: 'msg-name',
 		eachMessageli: 'msg-li'
 	},
 	options: {
@@ -29,7 +31,17 @@ chat = {
 }
 
 if(Meteor.isClient){
-	Session.set('currentRoom_id', chat.options.startingRoom_id);
+
+	Meteor.startup(function(){
+		Session.set('currentRoom_id', chat.options.startingRoom_id);
+		//check if the user is logged in, if not and we allow anonyous users make up a username
+		if(Meteor.userId){			
+			var name = Meteor.user().username;
+		}else if(chat.options.allowAnon){
+			Session.set('anonName', 'Anonymous'+Random.id(3));
+		}
+	})
+	
 
 	Template.message.helpers({
 		css: function(){
@@ -48,7 +60,9 @@ if(Meteor.isClient){
 
 	Template.rooms.events({
 		"submit #selectRoom": function(event, template){
+			Meteor.call('removeUserFromAllRooms', Session.get('anonName'));
 			Session.set('currentRoom_id', event.target.room_id.value);
+			Meteor.call('addUserToRoom', event.target.room_id.value, Session.get('anonName'));
 			return false;
 		}
 	})
@@ -112,7 +126,7 @@ if(Meteor.isClient){
 			var msg = e.target.message.value;
 
 			if(Session.get('currentRoom_id') !== ''){
-				Meteor.call('sendChatMessage', msg, Session.get('currentRoom_id'), function(err, res){
+				Meteor.call('sendChatMessage', msg, Session.get('currentRoom_id'), Session.get('anonName'), function(err, res){
 					console.log(res)
 					chat.scrollBottom();
 				    // Clear form
@@ -124,6 +138,27 @@ if(Meteor.isClient){
 		    // Prevent default form submit
 		    return false;
 		}
+	})
+
+	Template.chatManagement.events({
+		"click #clearAllJoinedUsers": function(){
+			Meteor.call('removeAllUsersFromRooms');
+		},
+		"click .chatMngtsaveRoomName": function(e, t){
+			var room_id = e.target.id.split('-')[1];
+			var newName = document.getElementById('editRoomName-'+room_id).value;
+			Meteor.call('renameRoom', room_id, newName)
+		},
+		"click .chatMngtdeleteRoom": function(e, t){
+			var room_id = e.target.id.split('-')[1];
+			Meteor.call('deleteRoom', room_id)
+		}
+	})
+
+	Template.chatManagement.helpers({
+		rooms: function(){
+			return ChatRooms.find();
+		},
 	})
 
 }
@@ -147,14 +182,17 @@ Meteor.methods({
 		}
 		// return {err: false, msg: 'Room created', _id: 'sfsdgdgfe'};
 	},
-	sendChatMessage: function(msg, room_id){
+	sendChatMessage: function(msg, room_id, name){
 		if(Meteor.userId){			
 			var user = {
 				_id: Meteor.userId,
-				owner: Meteor.user().username
+				name: Meteor.user().username
 			}
 			var anon = false
 		}else if(chat.options.allowAnon){
+			var user = {
+				name: name
+			}
 			anon = true;
 		}else{
 			return {err: true, msg: 'Please login to send a message'}
@@ -170,5 +208,45 @@ Meteor.methods({
 
 		ChatMessages.insert(msgObj);
 		return {err: false, msg: 'Message sent'}
+	},
+	addUserToRoom: function(room_id, name){
+		console.log(name)
+		if(Meteor.userId){			
+			var name = Meteor.user().username;
+		}else{
+			var name = name;
+		}
+		var user = {
+			userName: name,
+			joined: new Date()
+		}
+		ChatRooms.update({'_id':room_id}, {$push:{'joined':user}})
+	},
+	removeUserFromAllRooms: function(name){
+		if(Meteor.userId){			
+			var name = Meteor.user().username;
+		}else{
+			var name = name;
+		}
+		var user = {
+			userName: name,
+			joined: new Date()
+		}
+		ChatRooms.update({'joined.userName': name}, {$pull:{joined:{userName: name}}});
+	},
+	removeAllUsersFromRooms: function(room_id){
+		if(typeof room_id === 'undefined'){
+			ChatRooms.update({'joined': {$exists: true}}, {$unset:{'joined':true}},{multi: true});
+		}else{
+			if(typeof room_id === 'undefined'){
+			ChatRooms.update({'_id': room_id}, {$unset: {'joined':true}});
+		}
+		}
+	},
+	renameRoom: function(room_id, newName){
+		ChatRooms.update({_id:room_id}, {$set:{roomName: newName}})
+	},
+	deleteRoom: function(room_id){
+		ChatRooms.remove({_id: room_id})
 	}
 })

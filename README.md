@@ -4,7 +4,7 @@ This package adds simple chat features.
 - select a chatroom
 - send a message in a chat room
 
-Otions object allows editing css classes in templates and if anonymous (non-authenticated users) can chat
+Options object allows editing css classes in templates and if anonymous (non-authenticated users) can chat
 
 #Installation
 
@@ -13,29 +13,64 @@ meteor add jaymc:chat
 #Usage
 Use the follow templates
 
-A list of chatrooms
+List all chatrooms
 ```
 {{> rooms}}
 ```
 
-Currently selected chatroom with messages
+Display the currently selected chatroom with messages and send message dialog
 ```
 {{> room}}
 ```
 
-Create a new room
+Create a new chatroom
 ```
 {{> newRoom}}
 ```
 
+Management tasks
+```
+{{> chatManagement}}
+```
+
+#Options
+```
+chat = {
+	css: {	//defaulted for Bootstrap 3.0 but you can set your own classes here
+		msgs: 'well msgs',
+
+		btns: 'btn btn-default',
+		btnGroup: 'input-group-btn',
+
+		input: 'form-control',
+		inputGroup: 'input-group',
+
+		eachRoomName: '',
+
+		eachMessage: '',
+		eachMessageDate: 'msg-date',
+		eachMessageUsername: 'msg-name',
+		eachMessageli: 'msg-li'
+	},
+	options: {
+		startingRoom_id: '', //default starting chatroom, this can be handy if you only want a single chatroom and not use the newRoom template
+		allowAnon: true //first it tries to get the logged in user, if that fails they can either send as anonymous or be denied
+	}
+}
+```
+
 #Additional info
 - A session holds the currently select chatroom. Only one chatroom at a time can be selected.
-- Will use Meteor accounts if added
-- Uses reactive-var between template.helpers and events
+- Will use Meteor accounts if added, sending a chat message will check for userId and failing that if anonymous users can send messages.
+- Uses reactive-var between template.helpers and events.
+- Two Collections are utilised: chatRooms and chatMessages.
 
 #TODO
-- user text colours
+- Anonymous to use sudo usernames
+- list of users in the chatroom
+- message text colours
 - emojis?
 - notify sound
 - somesort of moderating
-- bad word list?
+- bad word filter?
+

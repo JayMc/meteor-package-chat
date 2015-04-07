@@ -14,9 +14,9 @@
 <template name="message">
 	<li class="{{css.eachMessageli}}">
 		{{#if anon}}
-			<span class="{{css.eachMessageUsername}}">Anonymous</span>	
+			<span class="{{css.eachMessageAnonUsername}}">{{user.name}}</span>	
 		{{else}}
-			<span class="{{css.eachMessageUsername}}">{{user.owner}}</span>	
+			<span class="{{css.eachMessageUsername}}">{{user.name}}</span>	
 		{{/if}}
 		<span class="{{css.eachMessage}}">{{msg}}</span>
 		<span class="{{css.eachMessageDate}}">({{created}})</span>
@@ -24,11 +24,18 @@
 </template>
 
 <template name="room">
+	{{#if data}}
 	<h3>{{data.roomName}}</h3>
 
 	<div id="chatMsgBox" class="{{css.msgs}}">
 		{{#each msgs}}
 			{{> message user=user anon=anon msg=msg created=createdAt}}
+		{{/each}}
+	</div>
+
+	<div class="{{css.joinedList}}">
+		{{#each data.joined}}
+			<li>{{userName}}</li>
 		{{/each}}
 	</div>
 
@@ -40,6 +47,20 @@
 			</span>
 		</div>
 	</form>
+	{{/if}}
+</template>
+
+<template name="chatManagement">
+	<button id="clearAllJoinedUsers">Clear joined</button>
+
+
+	{{#each rooms}}
+		<div class="{{css.eachRoomName}}">
+			<input id="editRoomName-{{_id}}" type="text" value="{{roomName}}">
+			<button id="mngt-{{_id}}" class="chatMngtsaveRoomName">Save</button>
+			<button id="mngt-{{_id}}" class="chatMngtdeleteRoom">Delete</button>
+		</div>
+	{{/each}}	
 </template>
 
 <template name="newRoom">
