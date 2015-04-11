@@ -21,25 +21,168 @@ chat = {
 		eachMessageli: 'msg-li'
 	},
 	options: {
-		startingRoom_id: '',
-		allowAnon: true
+		startingRoom_id: 'o4uYuTbrM2maNJZdz',
+		allowAnon: true,
+		chatContainer_id: 'chatMsgBox',
+		changeNamePastMessages: true
+	},
+
+	/*
+	*	User customisable events that can be redefined
+	*	ie: chat.onSend(funtion(){
+	*		
+	*	})
+	*/
+	onSend: function(res){
+		return 
+	},
+	onNewRoom: function(){
+		return
 	},
 	scrollBottom: function(){
-		var element = document.getElementById("chatMsgBox");
+		var element = document.getElementById(this.options.chatContainer_id);
 		element.scrollTop = element.scrollHeight;
+	},
+
+	/**
+	*	Constructor? auto joins room
+	*/
+	init: function(){
+
+		//check if the user is logged in, if not and we allow anonyous users make up a username
+		if(Meteor.userId){			
+			var name = Meteor.user().username;
+		}else if(this.options.allowAnon){
+			Session.set('anonName', 'Anonymous'+Random.id(3));
+			Session.set('anon_id', Random.id());
+		}		
+
+		if(this.options.startingRoom_id !== ''){
+			Session.set('currentRoom_id', this.options.startingRoom_id);
+			this.selectRoom(this.options.startingRoom_id);
+		}
+	},
+
+	/*
+	*	Sends a message into a room
+	*	
+	*	optional room_id, if not supplied uses users current room
+	*/
+	sendMessage: function(msg, room_id, callback){
+		var self = this;
+
+		if(typeof room_id === 'undefined' || room_id === ''){
+			room_id = Session.get('currentRoom_id');
+		}
+
+		//in case we have these, otherwise they wont be used
+		//server side wont have access to Session
+		var anonName = Session.get('anonName');
+		var anon_id = Session.get('anon_id');
+
+		if(Session.get('currentRoom_id') !== ''){
+
+			Meteor.call('sendChatMessage', msg, room_id, anonName, anon_id, function(err, res){
+				//scroll down
+				self.scrollBottom();
+			    
+			    self.onSend(res);
+			    
+			    //bubble up
+			    callback(err, res)
+			})
+		}
+	},
+
+	/**
+	*	Create a new room
+	*	
+	*/
+	createNewRoom: function(roomName_element, callback){
+		var self = this;
+		Meteor.call('createNewRoom', roomName_element.value, function(err, res){
+
+			if(!res.err){
+				roomName_element.value = '';
+			}
+
+			self.onNewRoom();
+
+			callback(err, res);
+
+		});		
+	},
+
+	/**
+	*	Get a list of messages
+	*	displays chat messages
+	*/
+	getMessages: function(room_id){
+
+		if(typeof room_id === 'undefined'){
+			room_id = Session.get('currentRoom_id');
+		}
+
+		if(typeof room_id !== 'undefined'){
+			return ChatMessages.find({'room_id': room_id});
+		}else{
+			return;
+		}
+	},
+
+	/**
+	*	Get a single room.
+	*	room_id is optional if you wanted to specify one that the has not joined
+	*	The users current room is stored in session.
+	*/
+	getRoom: function(room_id){
+
+		if(typeof room_id === 'undefined'){
+			room_id = Session.get('currentRoom_id');
+		}
+
+		if(typeof room_id !== 'undefined'){
+			return ChatRooms.findOne({'_id': Session.get('currentRoom_id')});
+		}else{
+			return;
+		}
+	},
+
+	/**
+	*	Get a list of all rooms
+	*
+	*/
+	getRooms: function(){
+		return ChatRooms.find();
+	},
+
+	/**
+	*	User can be a member of only one room at a time
+	*	selecting a room adds the room_id to user session and adds username to room joined list
+	*/
+	selectRoom: function(room_id){
+		Meteor.call('removeUserFromAllRooms', Session.get('anon_id'));
+		Session.set('currentRoom_id', room_id);
+		Meteor.call('addUserToRoom', room_id, Session.get('anonName'), Session.get('anon_id'));		
+	},
+
+	changeAnonName: function(newName){
+		if(this.options.allowAnon){
+			Session.set('anonName', newName);
+		}
+		Meteor.call('changeJoinedUserName', Session.get('anonName'), Session.get('anon_id'))
+
+		//change past messsages
+		if(this.options.changeNamePastMessages){
+			Meteor.call('changeMessageUserName', Session.get('anonName'), Session.get('anon_id'))
+		}
 	}
 }
 
 if(Meteor.isClient){
 
 	Meteor.startup(function(){
-		Session.set('currentRoom_id', chat.options.startingRoom_id);
-		//check if the user is logged in, if not and we allow anonyous users make up a username
-		if(Meteor.userId){			
-			var name = Meteor.user().username;
-		}else if(chat.options.allowAnon){
-			Session.set('anonName', 'Anonymous'+Random.id(3));
-		}
+		chat.init();
 	})
 	
 
@@ -51,7 +194,7 @@ if(Meteor.isClient){
 
 	Template.rooms.helpers({
 		rooms: function(){
-			return ChatRooms.find();
+			return chat.getRooms();
 		},
 		css: function(){
 			return chat.css;
@@ -60,28 +203,16 @@ if(Meteor.isClient){
 
 	Template.rooms.events({
 		"submit #selectRoom": function(event, template){
-			Meteor.call('removeUserFromAllRooms', Session.get('anonName'));
-			Session.set('currentRoom_id', event.target.room_id.value);
-			Meteor.call('addUserToRoom', event.target.room_id.value, Session.get('anonName'));
+			chat.selectRoom(event.target.room_id.value);
 			return false;
 		}
 	})
 
 	Template.newRoom.events({
 		"submit #newRoomForm": function(event, template){
-			var roomName = event.target.newRoomName.value;
-			Meteor.call('createNewRoom', roomName, function(err, res){
-				if(err){
+			chat.createNewRoom(event.target.newRoomName, function(){
 
-				}else{
-					if(!res.err){
-						event.target.newRoomName.value = "";
-					}
-					console.log(res);
-					// template.errorMsg.set(res.msg);
-
-				}
-			});
+			})
 
 		    // Prevent default form submit
 		    return false;
@@ -101,16 +232,29 @@ if(Meteor.isClient){
 		this.errorMsg = new ReactiveVar('');
 	}
 
+	Template.editAnonName.events({
+		"submit #editAnonNameForm": function(e, t){
+			chat.changeAnonName(e.target.AnonName.value)
+			return false;
+		}
+	})
+
+	Template.editAnonName.helpers({
+		anonName: function(){
+			if(chat.options.allowAnon){
+				return Session.get('anonName')
+			}else{
+				return '';
+			}
+		}
+	})
+
 	Template.room.helpers({
 		data: function(){
-			if(Session.get('currentRoom_id') !== ''){
-				return ChatRooms.findOne({'_id': Session.get('currentRoom_id')});
-			}
+			return chat.getRoom(Session.get('currentRoom_id'))
 		},
 		msgs: function(){
-			if(Session.get('currentRoom_id') !== ''){
-				return ChatMessages.find({'room_id': Session.get('currentRoom_id')});
-			}
+			return chat.getMessages(Session.get('currentRoom_id'));
 		},
 		css: function(){
 			return chat.css;
@@ -118,22 +262,23 @@ if(Meteor.isClient){
 	})
 
 	Template.message.onRendered(function(){
-		chat.scrollBottom();
+		chat.options.chatContainer_id = 'chatMsgBox';
+		chat.scrollBottom()
 	})
 
 	Template.room.events({
 		"submit #newMessage": function(e){
-			var msg = e.target.message.value;
 
-			if(Session.get('currentRoom_id') !== ''){
-				Meteor.call('sendChatMessage', msg, Session.get('currentRoom_id'), Session.get('anonName'), function(err, res){
-					console.log(res)
-					chat.scrollBottom();
-				    // Clear form
-				    e.target.message.value = "";
-				})
-			}
+			chat.sendMessage(e.target.message.value, '', function(err, res){
+				e.target.message.value = "";
 
+				if(err){
+					console.log(err.error)
+					console.log(err.reason)
+				}
+				// console.log(err)
+				console.log(res)
+			});
 
 		    // Prevent default form submit
 		    return false;
@@ -157,7 +302,7 @@ if(Meteor.isClient){
 
 	Template.chatManagement.helpers({
 		rooms: function(){
-			return ChatRooms.find();
+			return chat.getRooms();
 		},
 	})
 
@@ -182,7 +327,7 @@ Meteor.methods({
 		}
 		// return {err: false, msg: 'Room created', _id: 'sfsdgdgfe'};
 	},
-	sendChatMessage: function(msg, room_id, name){
+	sendChatMessage: function(msg, room_id, anonName, anon_id){
 		if(Meteor.userId){			
 			var user = {
 				_id: Meteor.userId,
@@ -191,11 +336,14 @@ Meteor.methods({
 			var anon = false
 		}else if(chat.options.allowAnon){
 			var user = {
-				name: name
+				_id: anon_id,
+				name: anonName
 			}
-			anon = true;
+			var anon = true;
 		}else{
-			return {err: true, msg: 'Please login to send a message'}
+			throw new Meteor.Error('logged-out', 'Please login to send a message');
+			// return {err: true, msg: 'Please login to send a message'}
+
 		}
 		
 		var msgObj = {
@@ -206,33 +354,55 @@ Meteor.methods({
 			createdAt: new Date()
 		}
 
-		ChatMessages.insert(msgObj);
-		return {err: false, msg: 'Message sent'}
+		var newMsg_id = ChatMessages.insert(msgObj);
+		return {msg: 'Message sent', id: newMsg_id}
 	},
-	addUserToRoom: function(room_id, name){
-		console.log(name)
+	addUserToRoom: function(room_id, anonName, anon_id){
 		if(Meteor.userId){			
-			var name = Meteor.user().username;
-		}else{
-			var name = name;
-		}
-		var user = {
-			userName: name,
-			joined: new Date()
+			var user = {
+				_id: Meteor.userId,
+				name: Meteor.user().username,
+				anon: false,
+				joined: new Date()
+			}
+		}else if(chat.options.allowAnon){
+			var user = {
+				_id: anon_id,
+				name: anonName,
+				anon: true,
+				joined: new Date()
+			}
 		}
 		ChatRooms.update({'_id':room_id}, {$push:{'joined':user}})
 	},
-	removeUserFromAllRooms: function(name){
+	removeUserFromAllRooms: function(anon_id){
 		if(Meteor.userId){			
-			var name = Meteor.user().username;
+			var user_id = Meteor.userId;
 		}else{
-			var name = name;
+			var user_id = anon_id;
 		}
-		var user = {
-			userName: name,
-			joined: new Date()
+
+		ChatRooms.update({'joined._id': user_id}, {$pull:{joined:{_id: user_id}}});
+	},
+	changeJoinedUserName: function(anonName, anon_id){
+		if(Meteor.userId){			
+			var newName = Meteor.user().username;
+			var user_id = Meteor.userId;
+		}else{
+			var newName = anonName;
+			var user_id = anon_id;
 		}
-		ChatRooms.update({'joined.userName': name}, {$pull:{joined:{userName: name}}});
+		ChatRooms.update({'joined._id': user_id}, {$set:{'joined.$.name': newName}}, {multi: true})
+	},
+	changeMessageUserName: function(anonName, anon_id){
+		if(Meteor.userId){			
+			var newName = Meteor.user().username;
+			var user_id = Meteor.userId;
+		}else{
+			var newName = anonName;
+			var user_id = anon_id;
+		}
+		ChatMessages.update({'user._id': user_id}, {$set:{'user.name': newName}}, {multi: true})
 	},
 	removeAllUsersFromRooms: function(room_id){
 		if(typeof room_id === 'undefined'){

@@ -25,6 +25,8 @@ Package.onUse(function(api) {
     'chat.js'
   ], ['client','server']);
 
+  api.export('chat', 'client');
+
 });
 
 Package.onTest(function(api) {

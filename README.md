@@ -55,6 +55,7 @@ chat = {
 	options: {
 		startingRoom_id: '', //default starting chatroom, this can be handy if you only want a single chatroom and not use the newRoom template
 		allowAnon: true //first it tries to get the logged in user, if that fails they can either send as anonymous or be denied
+		chatContainer_id: 'chatMsgBox' //where you messages are displayed in a scrollable chat window. Used for auto scrolling down after a message is sent.
 	}
 }
 ```

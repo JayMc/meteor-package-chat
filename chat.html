@@ -14,9 +14,9 @@
 <template name="message">
 	<li class="{{css.eachMessageli}}">
 		{{#if anon}}
-			<span class="{{css.eachMessageAnonUsername}}">{{user.name}}</span>	
+			<span class="{{css.eachMessageAnonUsername}}">{{user.name}}: </span>	
 		{{else}}
-			<span class="{{css.eachMessageUsername}}">{{user.name}}</span>	
+			<span class="{{css.eachMessageUsername}}">{{user.name}}: </span>	
 		{{/if}}
 		<span class="{{css.eachMessage}}">{{msg}}</span>
 		<span class="{{css.eachMessageDate}}">({{created}})</span>
@@ -35,12 +35,13 @@
 
 	<div class="{{css.joinedList}}">
 		{{#each data.joined}}
-			<li>{{userName}}</li>
+			<li>{{name}}</li>
 		{{/each}}
 	</div>
 
 	<form id="newMessage" type="POST">
 		<div class="{{css.inputGroup}}">
+			<p id="messageError">{{messageError}}</p>
 			<input type="text" class="{{css.input}}" name="message" placeholder="message"/>
 			<span class="{{css.btnGroup}}">
 				<input class="{{css.btns}}" type="submit" value="Send">
@@ -69,6 +70,17 @@
 		<div class="{{css.inputGroup}}">
 			<input type="text" name="newRoomName" placeholder="room name" />
 			<input class="{{css.btn}}" type="submit" value="Create">
+			<p class="error">{{errorMsg}}</p>
+		</div>
+	</form>
+</template>
+
+<template name="editAnonName">
+	<h3>Change name</h3>
+	<form id="editAnonNameForm" type="POST">
+		<div class="{{css.inputGroup}}">
+			<input type="text" name="AnonName" placeholder="New name" value="{{anonName}}"/>
+			<input class="{{css.btn}}" type="submit" value="Change">
 			<p class="error">{{errorMsg}}</p>
 		</div>
 	</form>
