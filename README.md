@@ -56,8 +56,23 @@ chat = {
 		startingRoom_id: '', //default starting chatroom, this can be handy if you only want a single chatroom and not use the newRoom template
 		allowAnon: true //first it tries to get the logged in user, if that fails they can either send as anonymous or be denied
 		chatContainer_id: 'chatMsgBox' //where you messages are displayed in a scrollable chat window. Used for auto scrolling down after a message is sent.
+		changeNamePastMessages: true, //if a user changes her username, update username for all past messages sent by this user
+		debounceDelay: 400 //adjust the debonuce on new message typing. Lower value will be more responsive to key presses but with the down side of query the database more frequently.
 	}
 }
+```
+
+#User accounts
+If you're not using Meteors accounts package. All users will be treated as anonymous by receiving a random username and id which is not persistant after they revist. 
+If Meteors accounts package is used. The users id and username will be respected and used for all actions.
+
+To get going with Meteors accounts package make sure you utilise username:
+```
+meteor add accounts-ui accounts-password
+
+Accounts.ui.config({
+  passwordSignupFields: "USERNAME_ONLY"
+});
 ```
 
 #Additional info

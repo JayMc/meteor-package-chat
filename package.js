@@ -22,7 +22,8 @@ Package.onUse(function(api) {
   api.addFiles([
     'chat.html',
     'chat.css',
-    'chat.js'
+    'chat.js',
+    'core.js'
   ], ['client','server']);
 
   api.export('chat', 'client');
