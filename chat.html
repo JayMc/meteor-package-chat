@@ -4,9 +4,8 @@
 	<div class="{{css.eachRoomName}}">
 		<form id="selectRoom" type="POST">
 			<input name="room_id" type="hidden" value="{{_id}}">
-			<button>Go {{roomName}}</button>
+			<button class="{{css.btnPrimary}}" >Go {{roomName}}</button>
 		</form>
-		<!-- {{> room data=currentRoom}} -->
 	</div>
 {{/each}}
 </template>
@@ -35,23 +34,24 @@
 
 	<div class="{{css.joinedList}}">
 		{{#each data.joined}}
-			<li>{{name}}</li>
+			<li class="{{css.eachMember}}">{{name}}</li>
 		{{/each}}
 	</div>
 
 	<form id="newMessage" type="POST">
 		<div class="{{css.inputGroup}}">
-			<p id="messageError">{{messageError}}</p>
 			<input type="text" class="{{css.input}}" name="message" placeholder="message"/>
 			<span class="{{css.btnGroup}}">
-				<input class="{{css.btns}}" type="submit" value="Send">
+				<input class="{{css.btnPrimary}}" type="submit" value="Send">
 			</span>
 		</div>
+		<p id="messageError">{{messageError}}</p>
 	</form>
 	{{/if}}
 </template>
 
 <template name="chatManagement">
+
 	<h3>Mangement</h3>
 	<button id="clearAllJoinedUsers">Clear joined</button>
 
@@ -59,8 +59,8 @@
 	{{#each rooms}}
 		<div class="{{css.eachRoomName}}">
 			<input id="editRoomName-{{_id}}" type="text" value="{{roomName}}">
-			<button id="mngt-{{_id}}" class="chatMngtsaveRoomName">Save</button>
-			<button id="mngt-{{_id}}" class="chatMngtdeleteRoom">Delete</button>
+			<button id="mngt-{{_id}}" class="chatMngtsaveRoomName {{css.btnPrimary}}">Save</button>
+			<button id="mngt-{{_id}}" class="chatMngtdeleteRoom {{css.btnDanger}}">Delete</button>
 		</div>
 	{{/each}}	
 </template>

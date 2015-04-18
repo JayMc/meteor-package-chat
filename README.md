@@ -1,3 +1,4 @@
+[![endorse](https://api.coderwall.com/jaymc/endorsecount.png)](https://coderwall.com/jaymc)
 #Intro
 This package adds simple chat features.
 - create a chatroom
@@ -82,8 +83,6 @@ Accounts.ui.config({
 - Two Collections are utilised: chatRooms and chatMessages.
 
 #TODO
-- Anonymous to use sudo usernames
-- list of users in the chatroom
 - message text colours
 - emojis?
 - notify sound

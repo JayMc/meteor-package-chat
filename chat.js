@@ -77,6 +77,9 @@ if(Meteor.isClient){
 			}else{
 				return '';
 			}
+		},
+		css: function(){
+			return chat.css;
 		}
 	})
 
@@ -138,6 +141,9 @@ if(Meteor.isClient){
 		rooms: function(){
 			return chat.getRooms();
 		},
+		css: function(){
+			return chat.css;
+		}
 	})
 
 }

@@ -1,6 +1,9 @@
 .msg-li {
 	list-style-type: none;
 }
+.member-li {
+	list-style-type: none;
+}
 .msg-name {
 	font-weight: bold;
 }
@@ -17,4 +20,9 @@
 	width: 35%;
 	height: 150px;
 	overflow: scroll;
+	padding: 2px !important;	
+}
+.chatMsgBox {
+	margin-right: 10px;
+	padding: 2px !important;
 }

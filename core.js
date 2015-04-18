@@ -7,11 +7,13 @@ chat = {
 		msgs: 'well chatMsgBox msgs',
 		joinedList: 'well joined-users',
 
-		btns: 'btn btn-default',
-		btnGroup: 'input-group-btn',
+		btn: 'btn btn-default',
+		btnPrimary: 'btn btn-primary',
+		btnDanger: 'btn btn-danger',
 
 		input: 'form-control',
 		inputGroup: 'input-group',
+		btnGroup: 'input-group-btn',
 
 		eachRoomName: '',
 
@@ -19,7 +21,8 @@ chat = {
 		eachMessageDate: 'msg-date',
 		eachMessageUsername: 'msg-name',
 		eachMessageAnonUsername: 'msg-name',
-		eachMessageli: 'msg-li'
+		eachMessageli: 'msg-li',
+		eachMember: 'member-li'
 	},
 	options: {
 		startingRoom_id: 'o4uYuTbrM2maNJZdz',
