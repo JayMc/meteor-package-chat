@@ -65,7 +65,7 @@ if(Meteor.isClient){
 
 	Template.editAnonName.events({
 		"submit #editAnonNameForm": function(e, t){
-			chat.changeAnonName(e.target.AnonName.value)
+			chat.changeName(e.target.AnonName.value)
 			return false;
 		}
 	})
@@ -266,7 +266,6 @@ Meteor.methods({
 			var newName = anonName;
 			var user_id = anon_id;
 		}
-
 		if(user_id){
 			ChatMessages.update({'user._id': user_id}, {$set:{'user.name': newName}}, {multi: true})
 		}

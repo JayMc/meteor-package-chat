@@ -207,13 +207,13 @@ chat = {
 	*/
 	changeName: function(newName){
 
-		Meteor.call('changeJoinedUserName', Session.get('anonName'), Session.get('anon_id'))
+		Meteor.call('changeJoinedUserName', newName, Session.get('anon_id'));
 		//change past messsages
-		if(this.options.changeNamePastMessages){
-			Meteor.call('changeMessageUserName', Session.get('anonName'), Session.get('anon_id'))
-		}
 		if(this.options.allowAnon){
 			Session.set('anonName', newName);
+		}
+		if(this.options.changeNamePastMessages){
+			Meteor.call('changeMessageUserName', newName, Session.get('anon_id'))
 		}
 		this.onChangeName(newName);
 	},
