@@ -38,20 +38,26 @@ Management tasks
 ```
 chat = {
 	css: {	//defaulted for Bootstrap 3.0 but you can set your own classes here
-		msgs: 'well msgs',
+		msgs: 'well chatMsgBox msgs',
+		joinedList: 'well joined-users',
 
-		btns: 'btn btn-default',
-		btnGroup: 'input-group-btn',
+		btn: 'btn btn-default',
+		btnPrimary: 'btn btn-primary',
+		btnDanger: 'btn btn-danger',
+		btnDropdown: 'btn btn-info',
 
 		input: 'form-control',
 		inputGroup: 'input-group',
+		btnGroup: 'input-group-btn',
 
 		eachRoomName: '',
 
 		eachMessage: '',
 		eachMessageDate: 'msg-date',
 		eachMessageUsername: 'msg-name',
-		eachMessageli: 'msg-li'
+		eachMessageAnonUsername: 'msg-name',
+		eachMessageli: 'msg-li',
+		eachMember: 'member-li'
 	},
 	options: {
 		startingRoom_id: '', //default starting chatroom, this can be handy if you only want a single chatroom and not use the newRoom template
@@ -59,6 +65,7 @@ chat = {
 		chatContainer_id: 'chatMsgBox' //where you messages are displayed in a scrollable chat window. Used for auto scrolling down after a message is sent.
 		changeNamePastMessages: true, //if a user changes her username, update username for all past messages sent by this user
 		debounceDelay: 400 //adjust the debonuce on new message typing. Lower value will be more responsive to key presses but with the down side of query the database more frequently.
+		statuses: ['typing','deleting', 'na', 'away', 'online', 'offline'] //valid user status that are allowed to be displayed
 	}
 }
 ```

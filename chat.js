@@ -87,6 +87,10 @@ if(Meteor.isClient){
 		data: function(){
 			return chat.getRoom(Session.get('currentRoom_id'))
 		},
+		joined: function(){
+			console.log(chat.getJoined(Session.get('currentRoom_id')));
+			return chat.getJoined(Session.get('currentRoom_id'))
+		},
 		msgs: function(){
 			return chat.getMessages(Session.get('currentRoom_id'));
 		},
@@ -122,6 +126,18 @@ if(Meteor.isClient){
 		}
 	})
 
+	Template.changeStatus.helpers({
+		css: function(){
+			return chat.css;
+		}
+	})
+
+	Template.changeStatus.events({
+		"click .selectStatus": function(e, o){
+			chat.changeStatus(e.currentTarget.dataset.status);
+		}
+	})
+
 	Template.chatManagement.events({
 		"click #clearAllJoinedUsers": function(){
 			Meteor.call('removeAllUsersFromRooms');
@@ -150,7 +166,7 @@ if(Meteor.isClient){
 
 if(Meteor.isServer){
 	Meteor.publish('chatmessages', function(){
-		return ChatMessages.find();
+		return ChatMessages.find({}, {sort: {createdAt: -1}, limit: chat.options.getMessagesLimit});
 	})
 	Meteor.publish('chatrooms', function(){
 		return ChatRooms.find();
@@ -216,14 +232,16 @@ Meteor.methods({
 				_id: Meteor.userId(),
 				name: Meteor.user().username,
 				anon: false,
-				joined: new Date()
+				joined: new Date(),
+				lastMsg: new Date()
 			}
 		}else if(chat.options.allowAnon){
 			var user = {
 				_id: anon_id,
 				name: anonName,
 				anon: true,
-				joined: new Date()
+				joined: new Date(),
+				lastMsg: new Date()
 			}
 		}
 
@@ -271,7 +289,31 @@ Meteor.methods({
 		}
 	},
 
-	changeJoinedUserStatus: function(newStatus, anon_id){
+	changeJoinedUserStatus: function(room_id, anonName, anon_id, newStatus){
+		if(_.contains(chat.options.statuses, newStatus)){
+			if(Meteor.userId()){			
+				var newName = Meteor.user().username;
+				var user_id = Meteor.userId();
+			}else{
+				var newName = anonName;
+				var user_id = anon_id;
+			}
+			if(user_id && room_id){
+				ChatRooms.update({'joined._id': user_id, '_id': room_id}, {$set:{'joined.$.status': newStatus}})
+			}
+		}
+
+	},
+
+	changeJoinedUserLastMsg: function(room_id, anon_id){
+		if(Meteor.userId()){			
+			var user_id = Meteor.userId();
+		}else{
+			var user_id = anon_id;
+		}
+		if(user_id && room_id){
+			ChatRooms.update({'joined._id': user_id, '_id': room_id}, {$set:{'joined.$.lastMsg': new Date()}})
+		}
 
 	},
 

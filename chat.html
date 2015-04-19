@@ -22,6 +22,21 @@
 	</li>
 </template>
 
+<template name="changeStatus">
+	<div class="btn-group">
+	  <button type="button" class="{{css.btnDropdown}} dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+	    Status <span class="caret"></span>
+	  </button>
+	  <ul class="dropdown-menu" role="menu">
+	    <li class="selectStatus" data-status="away" ><a href="#">Away</a></li>
+	    <li class="selectStatus" data-status="na"><a href="#">NA</a></li>
+	    <li class="selectStatus" data-status="offline"><a href="#">Offline</a></li>
+	    <li class="divider"></li>
+	    <li class="selectStatus" data-status="online"><a href="#">Online</a></li>
+	  </ul>
+	</div>
+</template>
+
 <template name="room">
 	{{#if data}}
 	<h3>{{data.roomName}}</h3>
@@ -33,11 +48,11 @@
 	</div>
 
 	<div class="{{css.joinedList}}">
-		{{#each data.joined}}
-			<li class="{{css.eachMember}}">{{name}}</li>
+		{{#each joined}}
+			<li class="{{css.eachMember}}">{{name}} {{status}}</li>
 		{{/each}}
 	</div>
-
+{{> changeStatus}}
 	<form id="newMessage" type="POST">
 		<div class="{{css.inputGroup}}">
 			<input type="text" class="{{css.input}}" name="message" placeholder="message"/>
