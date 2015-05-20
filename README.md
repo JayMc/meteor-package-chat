@@ -1,17 +1,17 @@
 [![endorse](https://api.coderwall.com/jaymc/endorsecount.png)](https://coderwall.com/jaymc)
-#Intro
+# Intro
 This package adds simple chat features.
 - create a chatroom
 - select a chatroom
 - send a message in a chat room
+- view users in room
+- message typing status
 
-Options object allows editing css classes in templates and if anonymous (non-authenticated users) can chat
-
-#Installation
+# Installation
 
 meteor add jaymc:chat
 
-#Usage
+# Usage
 Use the follow templates
 
 List all chatrooms
@@ -34,7 +34,7 @@ Management tasks
 {{> chatManagement}}
 ```
 
-#Options
+# Options
 ```
 chat = {
 	css: {	//defaulted for Bootstrap 3.0 but you can set your own classes here
@@ -70,7 +70,7 @@ chat = {
 }
 ```
 
-#User accounts
+# User accounts
 If you're not using Meteors accounts package. All users will be treated as anonymous by receiving a random username and id which is not persistant after they revist. 
 If Meteors accounts package is used. The users id and username will be respected and used for all actions.
 
@@ -83,13 +83,13 @@ Accounts.ui.config({
 });
 ```
 
-#Additional info
+# Additional info
 - A session holds the currently select chatroom. Only one chatroom at a time can be selected.
 - Will use Meteor accounts if added, sending a chat message will check for userId and failing that if anonymous users can send messages.
 - Uses reactive-var between template.helpers and events.
 - Two Collections are utilised: chatRooms and chatMessages.
 
-#TODO
+# TODO
 - message text colours
 - emojis?
 - notify sound
