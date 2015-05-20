@@ -18,6 +18,11 @@ if(Meteor.isClient){
 		}
 	})
 
+	Template.message.onRendered(function(){
+		chat.options.chatContainer_id = 'chatMsgBox';
+		chat.scrollBottom()
+	})
+
 	Template.rooms.helpers({
 		rooms: function(){
 			return chat.getRooms();
@@ -88,7 +93,6 @@ if(Meteor.isClient){
 			return chat.getRoom(Session.get('currentRoom_id'))
 		},
 		joined: function(){
-			console.log(chat.getJoined(Session.get('currentRoom_id')));
 			return chat.getJoined(Session.get('currentRoom_id'))
 		},
 		msgs: function(){
@@ -97,11 +101,6 @@ if(Meteor.isClient){
 		css: function(){
 			return chat.css;
 		}
-	})
-
-	Template.message.onRendered(function(){
-		chat.options.chatContainer_id = 'chatMsgBox';
-		chat.scrollBottom()
 	})
 
 	Template.room.events({

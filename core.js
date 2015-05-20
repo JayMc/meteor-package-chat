@@ -1,7 +1,7 @@
 chat = {
 	/**
-	*	Properties
-	*
+	*	CSS
+	*	Apply classes
 	*/
 	css: {
 		msgs: 'well chatMsgBox msgs',
@@ -25,27 +25,30 @@ chat = {
 		eachMessageli: 'msg-li',
 		eachMember: 'member-li'
 	},
+
+	/**
+	*	Options
+	*/
 	options: {
 		startingRoom_id: 'o4uYuTbrM2maNJZdz',
 		// startingRoom_id: '',
 		allowAnon: true,
 		chatContainer_id: 'chatMsgBox',
-		changeNamePastMessages: true,
-		debounceDelay: 300,
-		getMessagesLimit: 10, 
-		statuses: ['typing','deleting', 'na', 'away', 'online', 'offline'], //allowed user statuses
+		changeNamePastMessages: true, // When a user changes their name should it go back to previous messages and update the name
+		delayTypingStatus: 250, //delay since last keypress before showing 'typing' status
+		delayClearStatus: 3000, // if the user stops typing how long until their 'typing' status is removed
+		getMessagesLimit: 100, //only show this many messages
+		statuses: ['typing','deleting', 'na', 'away', 'online', 'offline', ''], //allowed user statuses
 
 	},
 
 	/*
-	*	Events	
-	*	User customisable events that can be redefined
-	*	ie: chat.onSend(function(err, res){
-	*		console.log(err.reason)
-	*	})
+	*	ReactiveVar Events	
+	*	Easy Reactive Hooks for your app
 	*/
-	onSend: function(err, res){
-		return 
+	_sent: new ReactiveVar(''),
+	sent: function(err, res){
+		return this._sent.get()
 	},
 
 	_newRoom: new ReactiveVar(''),
@@ -57,9 +60,6 @@ chat = {
 	currentRoom: function(){
 		// console.log(this._currentRoom.get())
 		return this._currentRoom.get();
-	},
-	onChangeName: function(newName){
-		return
 	},
 
 	scrollBottom: function(){
@@ -132,6 +132,9 @@ chat = {
 				self.scrollBottom();
 
 			    self.onSend(err, res);
+
+			    // reactive var
+			    self._sent.set(msg)
 			    
 			    //bubble up
 			    callback(err, res)
@@ -203,6 +206,13 @@ chat = {
 			var joinedSorted = _.sortBy(joined.joined, function(j){
 				return j.lastMsg;
 			})
+			var joinedSorted = _.filter(joinedSorted, function(j){
+				var yesterday = new Date(new Date().setDate(new Date().getDate()-1));
+				var lastMin = new Date(new Date().setMinutes(new Date().getMinutes()-5));
+				var lastHour = new Date(new Date().setHours(new Date().getHours()-1));
+				return j.joined > lastMin
+			})
+
 			return joinedSorted.reverse();
 		}else{
 			return;
@@ -267,11 +277,22 @@ chat = {
 		}
 	},
 
+	// changes status to typing/deleting
 	_handleChangeTypingStatus: function(status){
 		var self = this;
 		Meteor.clearTimeout(this.debounce);
 		this.debounce = Meteor.setTimeout(function(){
-			self.changeStatus(status)
-		}, self.options.debounceDelay);
+			self.changeStatus(status);
+			self._clearTypingStatus();
+		}, self.options.delayTypingStatus);
+	},
+
+	// Clear status if they stop typing/deleting for too long
+	_clearTypingStatus: function(){
+		var self = this;
+		Meteor.clearTimeout(this.debounceClear);
+		this.debounceClear = Meteor.setTimeout(function(){
+			self.changeStatus('');
+		}, self.options.delayClearStatus);
 	}
 }
